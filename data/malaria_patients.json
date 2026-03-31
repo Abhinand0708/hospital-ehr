@@ -1,0 +1,18 @@
+[
+  {
+    "id": "MAL-20260313-00B15488",
+    "name": "shabin",
+    "age": "23",
+    "gender": "Male",
+    "contact": "2224",
+    "symptoms": "",
+    "doctor_name": "Dr. Ml",
+    "result": "Infected",
+    "confidence": 95.74,
+    "severity": "Critical",
+    "treatment": "Immediate hospitalization required. Start IV antimalarial therapy (Artesunate). Monitor vital signs closely.",
+    "image_path": "static/uploads\\shabin_20260313_030510.jpg",
+    "timestamp": "2026-03-13T03:05:11.560706",
+    "analyzed_by": "admin"
+  }
+]

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare EHR — Hospital Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #0ea5e9 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Nav */
+        .landing-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+        }
+        .landing-nav .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .landing-nav .logo span { color: #7dd3fc; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: white; }
+        .btn-login-nav {
+            background: white;
+            color: #1e3a5f !important;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-weight: 600 !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+        }
+        .btn-login-nav:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+
+        /* Hero content */
+        .hero-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .hero-badge {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            max-width: 700px;
+        }
+        .hero-title span { color: #7dd3fc; }
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 550px;
+            line-height: 1.7;
+            margin-bottom: 40px;
+        }
+        .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .btn-primary-hero {
+            background: white;
+            color: #1e3a5f;
+            padding: 16px 36px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .btn-primary-hero:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+        .btn-secondary-hero {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 16px 36px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid rgba(255,255,255,0.4);
+            transition: background 0.2s;
+        }
+        .btn-secondary-hero:hover { background: rgba(255,255,255,0.25); }
+
+        /* Stats bar */
+        .stats-bar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding: 24px 60px;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .num { font-size: 2rem; font-weight: 800; }
+        .stat-item .lbl { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
+
+        /* Features section */
+        .features-section {
+            padding: 80px 60px;
+            background: white;
+        }
+        .section-label {
+            text-align: center;
+            color: #2563eb;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+        }
+        .section-sub {
+            text-align: center;
+            color: #6b7280;
+            max-width: 500px;
+            margin: 0 auto 50px;
+            line-height: 1.7;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 28px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 32px 28px;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+        .feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 700; color: #1e3a5f; margin-bottom: 10px; }
+        .feature-card p { color: #6b7280; font-size: 0.9rem; line-height: 1.6; }
+
+        /* Modules section */
+        .modules-section {
+            padding: 80px 60px;
+            background: #f0f4f8;
+        }
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .module-pill {
+            background: white;
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .module-pill:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .module-pill .icon { font-size: 2rem; margin-bottom: 10px; }
+        .module-pill h4 { font-size: 0.95rem; font-weight: 600; color: #1e3a5f; }
+
+        /* CTA section */
+        .cta-section {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 40px;
+        }
+        .cta-section h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; }
+        .cta-section p { color: rgba(255,255,255,0.8); margin-bottom: 36px; font-size: 1.05rem; }
+
+        /* Footer */
+        footer {
+            background: #1e3a5f;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 24px;
+            font-size: 0.85rem;
+        }
+        footer span { color: #7dd3fc; }
+
+        @media (max-width: 768px) {
+            .landing-nav { padding: 16px 20px; }
+            .hero-title { font-size: 2.2rem; }
+            .stats-bar { gap: 30px; padding: 20px; }
+            .features-section, .modules-section { padding: 50px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <nav class="landing-nav">
+        <div class="logo">🏥 Medi<span>Care</span> EHR</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#modules">Modules</a>
+            <a href="{{ url_for('login') }}" class="btn-login-nav">Login →</a>
+        </div>
+    </nav>
+
+    <div class="hero-content">
+        <div class="hero-badge">🔬 AI-Powered Malaria Detection Included</div>
+        <h1 class="hero-title">
+            Modern <span>Electronic Health</span><br>Records System
+        </h1>
+        <p class="hero-subtitle">
+            A complete hospital management platform — manage patients, appointments,
+            diagnoses, lab reports, treatments, and AI-powered malaria detection in one place.
+        </p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('login') }}" class="btn-primary-hero">Get Started →</a>
+            <a href="#modules" class="btn-secondary-hero">View Modules</a>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="num">8+</div>
+            <div class="lbl">Clinical Modules</div>
+        </div>
+        <div class="stat-item">
+            <div class="num">AI</div>
+            <div class="lbl">Malaria Detection</div>
+        </div>
+        <div class="stat-item">
+            <div class="num">MySQL</div>
+            <div class="lbl">Secure Database</div>
+        </div>
+        <div class="stat-item">
+            <div class="num">bcrypt</div>
+            <div class="lbl">Encrypted Logins</div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features-section" id="features">
+    <div class="section-label">Why MediCare EHR</div>
+    <h2 class="section-title">Everything your hospital needs</h2>
+    <p class="section-sub">Built with Python Flask, MySQL, and TensorFlow — designed for real clinical workflows.</p>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <span class="feature-icon">🤖</span>
+            <h3>AI Malaria Detection</h3>
+            <p>Upload blood smear images and get instant AI-powered malaria diagnosis with confidence scores and treatment recommendations.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🔐</span>
+            <h3>Secure Authentication</h3>
+            <p>bcrypt-hashed passwords with role-based access control. Your patient data stays protected.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🆔</span>
+            <h3>Smart Patient IDs</h3>
+            <p>Auto-generated IDs in YYYYMMDDNN format. Aadhar-based duplicate detection prevents double registration.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🔍</span>
+            <h3>Powerful Search</h3>
+            <p>Find patients by ID, Aadhar number, or partial name. All linked records shown instantly.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">📊</span>
+            <h3>Statistics Dashboard</h3>
+            <p>Real-time malaria infection rates, severity breakdowns, and analysis history at a glance.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🗄️</span>
+            <h3>Full MySQL Integration</h3>
+            <p>All 8 modules save directly to structured MySQL tables. Auto-creates database and tables on first run.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Modules -->
+<section class="modules-section" id="modules">
+    <div class="section-label">Clinical Modules</div>
+    <h2 class="section-title">8 Integrated Modules</h2>
+    <p class="section-sub">Each module has its own form, auto-generated IDs, and direct database storage.</p>
+
+    <div class="modules-grid">
+        <div class="module-pill"><div class="icon">👤</div><h4>Patient Registration</h4></div>
+        <div class="module-pill"><div class="icon">🔬</div><h4>Malaria AI Detector</h4></div>
+        <div class="module-pill"><div class="icon">📅</div><h4>Appointments</h4></div>
+        <div class="module-pill"><div class="icon">🩺</div><h4>Diagnosis</h4></div>
+        <div class="module-pill"><div class="icon">🧪</div><h4>Lab Reports</h4></div>
+        <div class="module-pill"><div class="icon">📋</div><h4>Medical History</h4></div>
+        <div class="module-pill"><div class="icon">💊</div><h4>Treatment Plans</h4></div>
+        <div class="module-pill"><div class="icon">📷</div><h4>Radiology Results</h4></div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <h2>Ready to get started?</h2>
+    <p>Log in with your credentials provided by the system administrator.</p>
+    <a href="{{ url_for('login') }}" class="btn-primary-hero">Open Dashboard →</a>
+</section>
+
+<footer>
+    <p>© 2026 <span>MediCare EHR</span> — Hospital Management System. Built with Flask + MySQL + TensorFlow.</p>
+</footer>
+
+</body>
+</html>

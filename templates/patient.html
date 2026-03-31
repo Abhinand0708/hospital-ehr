@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Patient Registration{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1>👤 Patient Registration</h1>
+        <p>Register a new patient — Patient ID is auto-generated (YYYYMMDDNN)</p>
+
+        <div class="form-container">
+            <form method="POST" class="hospital-form">
+                <div class="info-box" style="margin-bottom:20px;">
+                    <strong>ℹ️</strong> Patient ID is auto-generated. Aadhar number must be unique — duplicate check is automatic.
+                </div>
+
+                <!-- Aadhar first for duplicate check -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="aadhar_number">Aadhar Number *</label>
+                        <input type="text" id="aadhar_number" name="aadhar_number" required
+                               maxlength="12" pattern="[0-9]{12}" placeholder="12-digit Aadhar">
+                        <small style="color:#6b7280;font-size:12px;">Unique — prevents duplicate registration</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patient_firstname">First Name *</label>
+                        <input type="text" id="patient_firstname" name="patient_firstname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_middlename">Middle Name</label>
+                        <input type="text" id="patient_middlename" name="patient_middlename">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_lastname">Last Name *</label>
+                        <input type="text" id="patient_lastname" name="patient_lastname" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patient_DOB">Date of Birth *</label>
+                        <input type="date" id="patient_DOB" name="patient_DOB" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender *</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="marital_status">Marital Status</label>
+                        <select id="marital_status" name="marital_status">
+                            <option value="">Select</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="occupation">Occupation</label>
+                        <input type="text" id="occupation" name="occupation">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="medical_history">Medical History</label>
+                    <textarea id="medical_history" name="medical_history" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="allergies">Allergies</label>
+                    <textarea id="allergies" name="allergies" rows="2"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="emergency_contact">Emergency Contact Name</label>
+                        <input type="text" id="emergency_contact" name="emergency_contact">
+                    </div>
+                    <div class="form-group">
+                        <label for="emergency_phone">Emergency Contact Phone</label>
+                        <input type="tel" id="emergency_phone" name="emergency_phone">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Register Patient</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Hospital Management System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🏥 Hospital Management System</h2>
+        </div>
+        <div class="navbar-user">
+            <span>Welcome, {{ username }}</span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="dashboard-content">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Select a module to get started</p>
+        
+        <div class="modules-grid">
+            <a href="{{ url_for('patient') }}" class="module-card">
+                <div class="module-icon">👤</div>
+                <h3>Patient</h3>
+                <p>Register new patients</p>
+            </a>
+            
+            <a href="{{ url_for('search_patient') }}" class="module-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+                <div class="module-icon">🔍</div>
+                <h3>Search Patient</h3>
+                <p>Find patient records</p>
+            </a>
+            
+            <a href="{{ url_for('malaria_detector') }}" class="module-card highlight">
+                <div class="module-icon">🔬</div>
+                <h3>Malaria AI Detector</h3>
+                <p>AI-powered malaria detection</p>
+            </a>
+            
+            <a href="{{ url_for('appointment') }}" class="module-card">
+                <div class="module-icon">📅</div>
+                <h3>Appointment</h3>
+                <p>Schedule and manage appointments</p>
+            </a>
+            
+            <a href="{{ url_for('diagnosis') }}" class="module-card">
+                <div class="module-icon">🩺</div>
+                <h3>Diagnosis</h3>
+                <p>Patient diagnosis records</p>
+            </a>
+            
+            <a href="{{ url_for('lab_report') }}" class="module-card">
+                <div class="module-icon">🧪</div>
+                <h3>Lab Report</h3>
+                <p>View laboratory test results</p>
+            </a>
+            
+            <a href="{{ url_for('medical_history') }}" class="module-card">
+                <div class="module-icon">📋</div>
+                <h3>Medical History</h3>
+                <p>Patient medical history</p>
+            </a>
+            
+            <a href="{{ url_for('treatment') }}" class="module-card">
+                <div class="module-icon">💊</div>
+                <h3>Treatment</h3>
+                <p>Treatment plans and prescriptions</p>
+            </a>
+            
+            <a href="{{ url_for('radiology') }}" class="module-card">
+                <div class="module-icon">📷</div>
+                <h3>Radiology Result</h3>
+                <p>X-ray and imaging results</p>
+            </a>
+
+            <a href="{{ url_for('analytics') }}" class="module-card" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%);color:white;">
+                <div class="module-icon">📊</div>
+                <h3>Analytics</h3>
+                <p>Patient stats, graphs & insights</p>
+            </a>
+
+            <a href="{{ url_for('pathology') }}" class="module-card">
+                <div class="module-icon">🧫</div>
+                <h3>Pathology</h3>
+                <p>Lab pathology & cytology requests</p>
+            </a>
+
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('manage_users') }}" class="module-card" style="background:linear-gradient(135deg,#7c3aed 0%,#6d28d9 100%);color:white;">
+                <div class="module-icon">👥</div>
+                <h3>Manage Users</h3>
+                <p>View and manage staff accounts</p>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

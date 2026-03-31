@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Radiology Result{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🏥 Hospital Management System</h2>
+        </div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1>🔍 Radiology Request</h1>
+        <p>X-Ray and Medical Imaging Requests</p>
+
+        <div class="form-container">
+
+            <form method="POST" class="hospital-form" enctype="multipart/form-data">
+
+                <!-- Patient Info -->
+                <div class="info-box" style="margin-bottom:1rem;">
+                    ℹ️ Request ID is auto-generated (RAD-YYYYMMDD-NNN). Patient ID is auto-looked up from name.
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patient_name">Patient Full Name *</label>
+                        <input type="text" id="patient_name" name="patient_name" required
+                               autocomplete="off" placeholder="Type at least 2 letters — select from dropdown">
+                        <small style="color:#666;">Type at least 2 letters — select from dropdown</small>
+                        <span id="rad_confirm" style="display:none; color:green; font-size:0.85rem;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID (auto-filled)</label>
+                        <input type="text" id="patient_id" name="patient_id" readonly
+                               placeholder="Auto-filled when you select a patient"
+                               style="background:#f5f5f5;">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="request_id">Request ID</label>
+                        <input type="text" id="request_id" name="request_id" placeholder="Auto-generated">
+                    </div>
+                    <div class="form-group"></div>
+                </div>
+
+
+                <!-- Request Date -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="request_date">Request Date</label>
+                        <input type="date" id="request_date" name="request_date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="laboratory">Laboratory</label>
+                        <input type="text" id="laboratory" name="laboratory" required>
+                    </div>
+                </div>
+
+
+                <!-- Test Type -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="test_type">Test Type</label>
+
+                        <select id="test_type" name="test_type" required>
+
+                            <option value="">Select Test Type</option>
+
+                            <option value="X-Ray">X-Ray</option>
+
+                            <option value="CT Scan">CT Scan</option>
+
+                            <option value="MRI">MRI</option>
+
+                            <option value="Ultrasound">Ultrasound</option>
+
+                            <option value="Other">Other</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="region">Body Region</label>
+
+                        <select id="region" name="region">
+
+                            <option value="">Select Region</option>
+
+                            <option value="Head">Head</option>
+
+                            <option value="Chest">Chest</option>
+
+                            <option value="Abdomen">Abdomen</option>
+
+                            <option value="Pelvis">Pelvis</option>
+
+                            <option value="Spine">Spine</option>
+
+                            <option value="Extremities">Extremities</option>
+
+                            <option value="Other">Other</option>
+
+                        </select>
+
+                    </div>
+                </div>
+
+
+                <!-- Body Side -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="side_left">Left Side</label>
+                        <input type="text" id="side_left" name="side_left">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="side_right">Right Side</label>
+                        <input type="text" id="side_right" name="side_right">
+                    </div>
+                </div>
+
+
+                <!-- Other Region -->
+                <div class="form-group">
+                    <label for="other_region">Other Region (if applicable)</label>
+                    <input type="text" id="other_region" name="other_region">
+                </div>
+
+
+                <!-- Printed Requests -->
+                <div class="form-group">
+                    <label for="requests_printed">Requests Printed</label>
+                    <input type="text" id="requests_printed" name="requests_printed">
+                </div>
+
+
+                <!-- Other Test -->
+                <div class="form-group">
+                    <label for="other_test">Other Test Details</label>
+                    <textarea id="other_test" name="other_test" rows="2"></textarea>
+                </div>
+
+
+                <!-- Clinical Details -->
+                <div class="form-group">
+                    <label for="clinical_details">Clinical Details</label>
+                    <textarea id="clinical_details" name="clinical_details" rows="3" required></textarea>
+                </div>
+
+
+                <!-- Details Form -->
+                <div class="form-group">
+                    <label for="details_form">Details Form</label>
+                    <textarea id="details_form" name="details_form" rows="3"></textarea>
+                </div>
+
+
+                <!-- Additional Entry -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="add_entry">Additional Entry</label>
+                        <input type="text" id="add_entry" name="add_entry">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="due_date">Due Date</label>
+                        <input type="date" id="due_date" name="due_date">
+                    </div>
+                </div>
+
+                <!-- Result Section -->
+                <hr style="margin: 1.5rem 0; border-color: #ddd;">
+                <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:1rem; margin-bottom:1rem;">
+                    ℹ️ <strong>Note:</strong> After the test is done, go to <strong>Search Patient</strong>, find this patient, and click <strong>"Upload Result"</strong> on this radiology request to add the image and findings.
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-submit">
+                    Save Radiology Record
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        initPatientSearch('patient_name', 'patient_id', 'rad_confirm');
+        document.getElementById('rad_confirm').style.display = 'inline-block';
+    });
+</script>
+
+{% endblock %}

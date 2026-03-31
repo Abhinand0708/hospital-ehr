@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+{% block title %}Search Patient{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1>🔍 Search Patient</h1>
+        <p>Search by Patient ID, Aadhar Number, or partial name</p>
+
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('search_patient') }}" class="hospital-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="search_by">Search By *</label>
+                        <select id="search_by" name="search_by" required>
+                            <option value="patient_id">Patient ID</option>
+                            <option value="aadhar">Aadhar Number</option>
+                            <option value="name" {% if request.form.get('search_by') == 'name' %}selected{% endif %}>Name (partial)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="search_value">Search Value *</label>
+                        <input type="text" id="search_value" name="search_value" required
+                               value="{{ request.form.get('search_value', '') }}"
+                               placeholder="Enter Patient ID, Aadhar, or name">
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">🔍 Search</button>
+            </form>
+        </div>
+
+        {# ── Multiple results list ── #}
+        {% if patient_list %}
+        <div style="margin-top:30px;">
+            <h3 style="color:#1e3a5f; margin-bottom:16px;">
+                {{ patient_list|length }} patient(s) found — click a row to view full details
+            </h3>
+            <div class="records-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Full Name</th>
+                            <th>Date of Birth</th>
+                            <th>Aadhar Number</th>
+                            <th>Phone</th>
+                            <th>Gender</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in patient_list %}
+                        <tr class="clickable-row" onclick="window.location='{{ url_for('patient_detail', patient_id=p.patient_id) }}'">
+                            <td><strong>{{ p.patient_id }}</strong></td>
+                            <td>{{ p.patient_firstname }} {{ p.patient_middlename or '' }} {{ p.patient_lastname }}</td>
+                            <td>{{ p.patient_DOB }}</td>
+                            <td>{{ p.aadhar_number or '—' }}</td>
+                            <td>{{ p.phone or '—' }}</td>
+                            <td>{{ p.gender }}</td>
+                            <td><a href="{{ url_for('patient_detail', patient_id=p.patient_id) }}" class="btn-view">View →</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {# ── Single patient full detail ── #}
+        {% if search_performed and patient %}
+        <div class="result-container" style="margin-top:30px;">
+            <div class="result-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h2>✓ Patient Found</h2>
+                    <p>Patient ID: {{ patient.patient_id }}</p>
+                </div>
+                <div style="display:flex; gap:0.75rem; align-items:center;">
+                    <a href="{{ url_for('edit_patient', patient_id=patient.patient_id) }}"
+                       style="background:white; color:#059669; padding:6px 14px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600;">
+                        ✏️ Edit Patient
+                    </a>
+                    <a href="{{ url_for('search_patient') }}" style="color:white;text-decoration:none;font-size:0.9rem;opacity:0.85;">← New Search</a>
+                </div>
+            </div>
+            <div class="patient-details">
+                <h3 class="section-title">Personal Information</h3>
+                <div class="result-details-grid">
+                    <div class="detail-card"><label>PATIENT ID</label><p>{{ patient.patient_id }}</p></div>
+                    <div class="detail-card"><label>FULL NAME</label>
+                        <p>{{ patient.patient_firstname }} {{ patient.patient_middlename or '' }} {{ patient.patient_lastname }}</p>
+                    </div>
+                    <div class="detail-card"><label>DATE OF BIRTH</label><p>{{ patient.patient_DOB }}</p></div>
+                    <div class="detail-card"><label>GENDER</label><p>{{ patient.gender }}</p></div>
+                    <div class="detail-card"><label>EMAIL</label><p>{{ patient.email or 'N/A' }}</p></div>
+                    <div class="detail-card"><label>PHONE</label><p>{{ patient.phone or 'N/A' }}</p></div>
+                    <div class="detail-card"><label>AADHAR</label><p>{{ patient.aadhar_number or 'N/A' }}</p></div>
+                    <div class="detail-card"><label>MARITAL STATUS</label><p>{{ patient.marital_status or 'N/A' }}</p></div>
+                    <div class="detail-card"><label>OCCUPATION</label><p>{{ patient.occupation or 'N/A' }}</p></div>
+                </div>
+                <div class="form-group" style="margin-top:16px;">
+                    <label><strong>Address:</strong></label><p>{{ patient.address or 'N/A' }}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Medical History:</strong></label><p>{{ patient.medical_history or 'N/A' }}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Allergies:</strong></label><p>{{ patient.allergies or 'N/A' }}</p>
+                </div>
+
+                <h3 class="section-title" style="margin-top:24px;">Emergency Contact</h3>
+                <div class="result-details-grid">
+                    <div class="detail-card"><label>NAME</label><p>{{ patient.emergency_contact or 'N/A' }}</p></div>
+                    <div class="detail-card"><label>PHONE</label><p>{{ patient.emergency_phone or 'N/A' }}</p></div>
+                </div>
+
+                {% if patient.malaria_results %}
+                <h3 class="section-title" style="margin-top:28px;">🔬 Malaria Results ({{ patient.malaria_results|length }})</h3>
+                <div class="records-table"><table>
+                    <thead><tr><th>Date</th><th>Result</th><th>Confidence</th><th>Severity</th><th>Doctor</th></tr></thead>
+                    <tbody>{% for r in patient.malaria_results %}
+                    <tr>
+                        <td>{{ r.analysis_date.strftime('%Y-%m-%d %H:%M') if r.analysis_date else 'N/A' }}</td>
+                        <td><span class="badge badge-{{ 'danger' if r.result == 'Infected' else 'success' }}">{{ r.result }}</span></td>
+                        <td>{{ r.confidence }}%</td><td>{{ r.severity }}</td><td>{{ r.doctor_name }}</td>
+                    </tr>{% endfor %}</tbody>
+                </table></div>
+                {% endif %}
+
+                {% if patient.appointments %}
+                <h3 class="section-title" style="margin-top:28px;">📅 Appointments ({{ patient.appointments|length }})</h3>
+                <div class="records-table"><table>
+                    <thead><tr><th>ID</th><th>Date</th><th>Time</th><th>Doctor</th><th>Status</th><th></th></tr></thead>
+                    <tbody>{% for a in patient.appointments %}
+                    <tr><td>{{ a.appointment_id }}</td><td>{{ a.appointment_date }}</td>
+                        <td>{{ a.appointment_time }}</td><td>{{ a.doctor_name }}</td><td>{{ a.status }}</td>
+                        <td><a href="{{ url_for('edit_record', record_type='appointment', record_id=a.appointment_id) }}" style="color:#3b82f6; font-size:0.85rem;">✏️ Edit</a></td></tr>
+                    {% endfor %}</tbody>
+                </table></div>
+                {% endif %}
+
+                {% if patient.diagnosis %}
+                <h3 class="section-title" style="margin-top:28px;">🩺 Diagnosis ({{ patient.diagnosis|length }})</h3>
+                <div class="records-table"><table>
+                    <thead><tr><th>ID</th><th>Date</th><th>Final Diagnosis</th><th>Treatment Plan</th><th></th></tr></thead>
+                    <tbody>{% for d in patient.diagnosis %}
+                    <tr><td>{{ d.diagnosis_id }}</td><td>{{ d.diagnosis_date }}</td>
+                        <td>{{ d.final_diagnosis or 'Pending' }}</td><td>{{ d.treatment_plan or '—' }}</td>
+                        <td><a href="{{ url_for('edit_record', record_type='diagnosis', record_id=d.diagnosis_id) }}" style="color:#3b82f6; font-size:0.85rem;">✏️ Edit</a></td></tr>
+                    {% endfor %}</tbody>
+                </table></div>
+                {% endif %}
+
+                {% if patient.lab_reports %}
+                <h3 class="section-title" style="margin-top:28px;">🧪 Lab Reports ({{ patient.lab_reports|length }})</h3>
+                <div class="records-table"><table>
+                    <thead><tr><th>ID</th><th>Date</th><th>Physician</th><th>Hemoglobin</th><th>Glucose</th><th></th></tr></thead>
+                    <tbody>{% for r in patient.lab_reports %}
+                    <tr><td>{{ r.report_id }}</td><td>{{ r.test_date }}</td>
+                        <td>{{ r.physician or '—' }}</td><td>{{ r.hemoglobin or '—' }}</td><td>{{ r.glucose or '—' }}</td>
+                        <td><a href="{{ url_for('edit_record', record_type='lab_report', record_id=r.report_id) }}" style="color:#3b82f6; font-size:0.85rem;">✏️ Edit</a></td></tr>
+                    {% endfor %}</tbody>
+                </table></div>
+                {% endif %}
+
+                {% if patient.treatments %}
+                <h3 class="section-title" style="margin-top:28px;">💊 Treatments ({{ patient.treatments|length }})</h3>
+                <div class="records-table"><table>
+                    <thead><tr><th>ID</th><th>Date</th><th>Diagnosis</th><th>Medications</th><th></th></tr></thead>
+                    <tbody>{% for t in patient.treatments %}
+                    <tr><td>{{ t.treatment_id }}</td><td>{{ t.treatment_date }}</td>
+                        <td>{{ t.diagnosis or '—' }}</td><td>{{ t.medications or '—' }}</td>
+                        <td><a href="{{ url_for('edit_record', record_type='treatment', record_id=t.treatment_id) }}" style="color:#3b82f6; font-size:0.85rem;">✏️ Edit</a></td></tr>
+                    {% endfor %}</tbody>
+                </table></div>
+                {% endif %}
+
+                {% if patient.radiology %}
+                <h3 class="section-title" style="margin-top:28px;">🔍 Radiology ({{ patient.radiology|length }})</h3>
+                {% for r in patient.radiology %}
+                <div style="border:1px solid #e2e8f0; border-radius:10px; margin-bottom:1.2rem; background:#f8fafc; overflow:hidden;">
+
+                    <!-- Header bar -->
+                    <div style="background:linear-gradient(135deg,#1e40af,#3b82f6); color:white; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <strong style="font-size:1rem;">{{ r.request_id }}</strong>
+                            <span style="margin-left:1rem; opacity:0.85; font-size:0.85rem;">{{ r.request_date }}</span>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                            {% if r.test_type %}<span style="background:rgba(255,255,255,0.25); padding:2px 10px; border-radius:12px; font-size:0.8rem;">{{ r.test_type }}</span>{% endif %}
+                            {% if r.region %}<span style="background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:12px; font-size:0.8rem;">{{ r.region }}</span>{% endif %}
+                            {% if r.image_path %}
+                                <span style="background:#bbf7d0; color:#14532d; padding:2px 10px; border-radius:12px; font-size:0.8rem; font-weight:600;">✓ Result Ready</span>
+                            {% else %}
+                                <span style="background:#fef08a; color:#713f12; padding:2px 10px; border-radius:12px; font-size:0.8rem;">⏳ Awaiting Result</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div style="padding:1rem;">
+                        <!-- Request details grid -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:0.6rem; margin-bottom:0.75rem;">
+                            {% if r.laboratory %}
+                            <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Laboratory</div>
+                                <div style="font-weight:600; color:#1e293b;">{{ r.laboratory }}</div>
+                            </div>
+                            {% endif %}
+                            {% if r.test_type %}
+                            <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Test Type</div>
+                                <div style="font-weight:600; color:#1e293b;">{{ r.test_type }}</div>
+                            </div>
+                            {% endif %}
+                            {% if r.region %}
+                            <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Body Region</div>
+                                <div style="font-weight:600; color:#1e293b;">{{ r.region }}{% if r.other_region %} — {{ r.other_region }}{% endif %}</div>
+                            </div>
+                            {% endif %}
+                            {% if r.side_left or r.side_right %}
+                            <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Side</div>
+                                <div style="font-weight:600; color:#1e293b;">
+                                    {% if r.side_left %}L: {{ r.side_left }}{% endif %}
+                                    {% if r.side_left and r.side_right %} / {% endif %}
+                                    {% if r.side_right %}R: {{ r.side_right }}{% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if r.due_date %}
+                            <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Due Date</div>
+                                <div style="font-weight:600; color:#1e293b;">{{ r.due_date }}</div>
+                            </div>
+                            {% endif %}
+                            {% if r.requests_printed %}
+                            <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Requests Printed</div>
+                                <div style="font-weight:600; color:#1e293b;">{{ r.requests_printed }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Clinical details -->
+                        {% if r.clinical_details %}
+                        <div style="background:#fefce8; border-left:3px solid #eab308; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.6rem;">
+                            <span style="font-size:0.72rem; color:#713f12; text-transform:uppercase; font-weight:600;">Clinical Details</span>
+                            <p style="margin:0.2rem 0 0; color:#1e293b;">{{ r.clinical_details }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if r.other_test %}
+                        <div style="background:#f0fdf4; border-left:3px solid #22c55e; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.6rem;">
+                            <span style="font-size:0.72rem; color:#14532d; text-transform:uppercase; font-weight:600;">Other Test Details</span>
+                            <p style="margin:0.2rem 0 0; color:#1e293b;">{{ r.other_test }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if r.details_form %}
+                        <div style="background:#f8fafc; border-left:3px solid #94a3b8; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.6rem;">
+                            <span style="font-size:0.72rem; color:#475569; text-transform:uppercase; font-weight:600;">Details Form</span>
+                            <p style="margin:0.2rem 0 0; color:#1e293b;">{{ r.details_form }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Result section -->
+                        {% if r.image_path or r.radiologist_findings %}
+                        <div style="border-top:2px dashed #cbd5e1; margin-top:0.75rem; padding-top:0.75rem;">
+                            <div style="font-size:0.8rem; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.6rem;">📋 Radiology Result</div>
+
+                            {% if r.radiologist_findings %}
+                            <div style="background:#eff6ff; border-left:3px solid #3b82f6; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.6rem;">
+                                <span style="font-size:0.72rem; color:#1e40af; text-transform:uppercase; font-weight:600;">Radiologist Findings</span>
+                                <p style="margin:0.2rem 0 0; color:#1e293b;">{{ r.radiologist_findings }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if r.reported_by %}
+                            <p style="margin:0.25rem 0; color:#64748b; font-size:0.85rem;">🩺 Reported by: <strong>{{ r.reported_by }}</strong></p>
+                            {% endif %}
+
+                            {% if r.image_path %}
+                            <div style="margin-top:0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; font-weight:600; margin-bottom:0.4rem;">Result Image</div>
+                                <a href="/{{ r.image_path }}" target="_blank">
+                                    <img src="/{{ r.image_path }}" alt="Radiology Image"
+                                         style="max-width:420px; max-height:320px; border:2px solid #cbd5e1; border-radius:8px; cursor:pointer; display:block;"
+                                         title="Click to open full size">
+                                </a>
+                                <small style="color:#64748b;">Click image to open full size</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Upload button / form -->
+                        <div style="margin-top:0.75rem;">
+                        {% if not r.image_path %}
+                            <button onclick="toggleUpload('upload_{{ r.request_id }}')"
+                                    style="background:#3b82f6; color:white; border:none; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                                📤 Upload Result
+                            </button>
+                        {% else %}
+                            <button onclick="toggleUpload('upload_{{ r.request_id }}')"
+                                    style="background:#6b7280; color:white; border:none; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                                ✏️ Update Result
+                            </button>
+                        {% endif %}
+                        </div>
+
+                        <!-- Upload form — hidden until button clicked -->
+                        <div id="upload_{{ r.request_id }}" style="display:none; margin-top:1rem; padding:1rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;">
+                            <h4 style="margin:0 0 0.75rem; color:#1e40af;">📋 Upload Result for {{ r.request_id }}</h4>
+                            <form method="POST" action="/radiology-update/{{ r.request_id }}" enctype="multipart/form-data">
+                                <input type="hidden" name="patient_id" value="{{ patient.patient_id }}">
+                                <div style="margin-bottom:0.75rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Radiologist Findings / Report</label>
+                                    <textarea name="radiologist_findings" rows="3"
+                                              style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem;"
+                                              placeholder="Enter findings and observations...">{{ r.radiologist_findings or '' }}</textarea>
+                                </div>
+                                <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+                                    <div style="flex:1; min-width:200px;">
+                                        <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Reported By (Radiologist)</label>
+                                        <input type="text" name="reported_by" value="{{ r.reported_by or '' }}"
+                                               placeholder="Dr. Name"
+                                               style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px;">
+                                    </div>
+                                    <div style="flex:1; min-width:200px;">
+                                        <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Upload Image (X-Ray / MRI / CT)</label>
+                                        <input type="file" name="result_image" accept="image/*,.pdf"
+                                               style="width:100%; padding:0.4rem;">
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:0.75rem;">
+                                    <button type="submit"
+                                            style="background:#16a34a; color:white; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                        ✓ Save Result
+                                    </button>
+                                    <button type="button" onclick="toggleUpload('upload_{{ r.request_id }}')"
+                                            style="background:#6b7280; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if patient.pathology %}
+                <h3 class="section-title" style="margin-top:28px;">🧫 Pathology ({{ patient.pathology|length }})</h3>
+                {% for p in patient.pathology %}
+                <div style="border:1px solid #e2e8f0; border-radius:10px; margin-bottom:1rem; overflow:hidden;">
+                    <!-- Header -->
+                    <div style="background:linear-gradient(135deg,#065f46,#059669); color:white; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <strong>{{ p.pathology_id }}</strong>
+                            <span style="margin-left:1rem; opacity:0.85; font-size:0.85rem;">{{ p.request_date }}</span>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                            {% if p.billing_type %}<span style="background:rgba(255,255,255,0.25); padding:2px 10px; border-radius:12px; font-size:0.8rem;">{{ p.billing_type }}</span>{% endif %}
+                            {% if p.fasting_status %}<span style="background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:12px; font-size:0.8rem;">{{ p.fasting_status }}</span>{% endif %}
+                            {% if p.result_notes or p.result_image %}
+                                <span style="background:#bbf7d0; color:#14532d; padding:2px 10px; border-radius:12px; font-size:0.8rem; font-weight:600;">✓ Result Ready</span>
+                            {% else %}
+                                <span style="background:#fef08a; color:#713f12; padding:2px 10px; border-radius:12px; font-size:0.8rem;">⏳ Awaiting Result</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div style="padding:1rem;">
+                        <!-- Info grid -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:0.6rem; margin-bottom:0.75rem;">
+                            {% if p.doctor_name %}<div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;"><div style="font-size:0.72rem; color:#64748b; text-transform:uppercase;">Doctor</div><div style="font-weight:600;">{{ p.doctor_name }}</div></div>{% endif %}
+                            {% if p.lab %}<div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;"><div style="font-size:0.72rem; color:#64748b; text-transform:uppercase;">Laboratory</div><div style="font-weight:600;">{{ p.lab }}</div></div>{% endif %}
+                            {% if p.test_date %}<div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;"><div style="font-size:0.72rem; color:#64748b; text-transform:uppercase;">Test Date</div><div style="font-weight:600;">{{ p.test_date }}</div></div>{% endif %}
+                            {% if p.collection_by %}<div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;"><div style="font-size:0.72rem; color:#64748b; text-transform:uppercase;">Collected By</div><div style="font-weight:600;">{{ p.collection_by }}</div></div>{% endif %}
+                            {% if p.copy_to %}<div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:0.5rem 0.75rem;"><div style="font-size:0.72rem; color:#64748b; text-transform:uppercase;">Copy To</div><div style="font-weight:600;">{{ p.copy_to }}</div></div>{% endif %}
+                        </div>
+
+                        {% if p.favourite_tests %}<div style="background:#f0fdf4; border-left:3px solid #22c55e; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.5rem;"><span style="font-size:0.72rem; color:#14532d; text-transform:uppercase; font-weight:600;">Common Tests</span><p style="margin:0.2rem 0 0;">{{ p.favourite_tests }}</p></div>{% endif %}
+                        {% if p.test_list %}<div style="background:#f0fdf4; border-left:3px solid #16a34a; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.5rem;"><span style="font-size:0.72rem; color:#14532d; text-transform:uppercase; font-weight:600;">Full Test List</span><p style="margin:0.2rem 0 0; white-space:pre-line;">{{ p.test_list }}</p></div>{% endif %}
+                        {% if p.clinical_details %}<div style="background:#fefce8; border-left:3px solid #eab308; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.5rem;"><span style="font-size:0.72rem; color:#713f12; text-transform:uppercase; font-weight:600;">Clinical Details</span><p style="margin:0.2rem 0 0;">{{ p.clinical_details }}</p></div>{% endif %}
+                        {% if p.clinical_notes %}<div style="background:#f8fafc; border-left:3px solid #94a3b8; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.5rem;"><span style="font-size:0.72rem; color:#475569; text-transform:uppercase; font-weight:600;">Clinical Notes</span><p style="margin:0.2rem 0 0;">{{ p.clinical_notes }}</p></div>{% endif %}
+
+                        <div style="display:flex; gap:1rem; flex-wrap:wrap; font-size:0.85rem; color:#64748b; margin-top:0.25rem; margin-bottom:0.5rem;">
+                            {% if p.pregnancy_status %}<span>🤰 {{ p.pregnancy_status }}</span>{% endif %}
+                            {% if p.contraception_method %}<span>💊 {{ p.contraception_method }}</span>{% endif %}
+                            {% if p.abnormal_bleeding %}<span>🩸 Abnormal Bleeding: {{ p.abnormal_bleeding }}</span>{% endif %}
+                            {% if p.last_cytology %}<span>🔬 Last Cytology: {{ p.cytology_date or 'Yes' }}</span>{% endif %}
+                            {% if p.hpv_not_required %}<span>HPV Not Required{% if p.hpv_reason %}: {{ p.hpv_reason }}{% endif %}</span>{% endif %}
+                        </div>
+
+                        <!-- Result section -->
+                        {% if p.result_notes or p.result_image %}
+                        <div style="border-top:2px dashed #cbd5e1; margin-top:0.75rem; padding-top:0.75rem;">
+                            <div style="font-size:0.8rem; font-weight:700; color:#065f46; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.6rem;">📋 Pathology Result</div>
+                            {% if p.result_notes %}
+                            <div style="background:#f0fdf4; border-left:3px solid #059669; padding:0.6rem 0.75rem; border-radius:0 6px 6px 0; margin-bottom:0.5rem;">
+                                <span style="font-size:0.72rem; color:#065f46; text-transform:uppercase; font-weight:600;">Result / Findings</span>
+                                <p style="margin:0.2rem 0 0; white-space:pre-line;">{{ p.result_notes }}</p>
+                            </div>
+                            {% endif %}
+                            {% if p.reported_by %}
+                            <p style="margin:0.25rem 0; color:#64748b; font-size:0.85rem;">🩺 Reported by: <strong>{{ p.reported_by }}</strong></p>
+                            {% endif %}
+                            {% if p.result_image %}
+                            <div style="margin-top:0.75rem;">
+                                <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; font-weight:600; margin-bottom:0.4rem;">Result Image / Report</div>
+                                <a href="/{{ p.result_image }}" target="_blank">
+                                    <img src="/{{ p.result_image }}" alt="Pathology Result"
+                                         style="max-width:420px; max-height:320px; border:2px solid #cbd5e1; border-radius:8px; cursor:pointer; display:block;"
+                                         title="Click to open full size">
+                                </a>
+                                <small style="color:#64748b;">Click image to open full size</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Upload button -->
+                        <div style="margin-top:0.75rem;">
+                            {% if not p.result_notes and not p.result_image %}
+                            <button onclick="toggleUpload('path_upload_{{ p.pathology_id }}')"
+                                    style="background:#059669; color:white; border:none; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                                📤 Upload Result
+                            </button>
+                            {% else %}
+                            <button onclick="toggleUpload('path_upload_{{ p.pathology_id }}')"
+                                    style="background:#6b7280; color:white; border:none; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                                ✏️ Update Result
+                            </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Upload form -->
+                        <div id="path_upload_{{ p.pathology_id }}" style="display:none; margin-top:1rem; padding:1rem; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px;">
+                            <h4 style="margin:0 0 0.75rem; color:#065f46;">📋 Upload Result for {{ p.pathology_id }}</h4>
+                            <form method="POST" action="/pathology-update/{{ p.pathology_id }}" enctype="multipart/form-data">
+                                <input type="hidden" name="patient_id" value="{{ patient.patient_id }}">
+                                <div style="margin-bottom:0.75rem;">
+                                    <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Result / Findings</label>
+                                    <textarea name="result_notes" rows="4"
+                                              style="width:100%; padding:0.5rem; border:1px solid #a7f3d0; border-radius:6px; font-size:0.9rem;"
+                                              placeholder="Enter pathology result, findings, values...">{{ p.result_notes or '' }}</textarea>
+                                </div>
+                                <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+                                    <div style="flex:1; min-width:200px;">
+                                        <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Reported By (Pathologist)</label>
+                                        <input type="text" name="reported_by" value="{{ p.reported_by or '' }}"
+                                               placeholder="Dr. Name"
+                                               style="width:100%; padding:0.5rem; border:1px solid #a7f3d0; border-radius:6px;">
+                                    </div>
+                                    <div style="flex:1; min-width:200px;">
+                                        <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Upload Result Image / PDF</label>
+                                        <input type="file" name="result_image" accept="image/*,.pdf"
+                                               style="width:100%; padding:0.4rem;">
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:0.75rem;">
+                                    <button type="submit"
+                                            style="background:#059669; color:white; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                        ✓ Save Result
+                                    </button>
+                                    <button type="button" onclick="toggleUpload('path_upload_{{ p.pathology_id }}')"
+                                            style="background:#6b7280; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if not patient.malaria_results and not patient.appointments and not patient.diagnosis and not patient.lab_reports and not patient.treatments and not patient.radiology and not patient.pathology %}                <div style="margin-top:24px; padding:20px; background:#f9fafb; border-radius:8px; color:#6b7280; text-align:center;">
+                    No medical records found for this patient yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% elif search_performed and not patient and not patient_list %}
+        <div class="result-container" style="margin-top:30px;">
+            <div class="result-header" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;">
+                <h2>✗ No Patient Found</h2>
+                <p>No patient matched the provided information</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.patient-details { background:white; padding:30px; border-radius:0 0 10px 10px; }
+.records-table { overflow-x:auto; margin-top:12px; }
+.records-table table { width:100%; border-collapse:collapse; }
+.records-table th { background:#f3f4f6; padding:10px 14px; text-align:left; font-weight:600; color:#374151; border-bottom:2px solid #e5e7eb; font-size:0.85rem; }
+.records-table td { padding:10px 14px; border-bottom:1px solid #e5e7eb; color:#4b5563; font-size:0.9rem; }
+.records-table tr:hover { background:#f9fafb; }
+.clickable-row { cursor:pointer; transition:background 0.15s; }
+.clickable-row:hover { background:#eff6ff !important; }
+.btn-view { background:#2563eb; color:white; padding:5px 14px; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600; white-space:nowrap; }
+.btn-view:hover { background:#1d4ed8; }
+.badge { padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+.badge-success { background:#d1fae5; color:#065f46; }
+.badge-danger { background:#fee2e2; color:#991b1b; }
+</style>
+
+<script>
+function toggleUpload(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
+{% endblock %}

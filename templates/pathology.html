@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}Pathology Request{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1>🧫 Pathology Request</h1>
+        <p>Laboratory pathology and cytology test requests</p>
+
+        <div class="form-container">
+            <form method="POST" class="hospital-form">
+
+                <div class="info-box" style="margin-bottom:1rem;">
+                    ℹ️ Pathology ID is auto-generated (PATH-YYYYMMDD-NNN). Patient ID is auto-looked up from name.
+                </div>
+
+                <!-- Patient Info -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patient_name">Patient Full Name *</label>
+                        <input type="text" id="patient_name" name="patient_name" required
+                               autocomplete="off" placeholder="Type at least 2 letters — select from dropdown">
+                        <small style="color:#666;">Type at least 2 letters — select from dropdown</small>
+                        <span id="path_confirm" style="display:none; color:green; font-size:0.85rem;"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID (auto-filled)</label>
+                        <input type="text" id="patient_id" name="patient_id" readonly
+                               placeholder="Auto-filled when you select a patient"
+                               style="background:#f5f5f5;">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="doctor_name">Doctor Name *</label>
+                        <input type="text" id="doctor_name" name="doctor_name" required
+                               placeholder="Requesting doctor">
+                    </div>
+                    <div class="form-group">
+                        <label for="lab">Laboratory</label>
+                        <input type="text" id="lab" name="lab" placeholder="Lab name">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="request_date">Request Date *</label>
+                        <input type="date" id="request_date" name="request_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="test_date">Test Date</label>
+                        <input type="date" id="test_date" name="test_date">
+                    </div>
+                </div>
+
+                <!-- Tests -->
+                <hr style="margin:1.2rem 0; border-color:#e2e8f0;">
+                <h3 style="color:#2c5282; margin-bottom:0.75rem;">🧪 Tests Requested</h3>
+
+                <div class="form-group">
+                    <label for="favourite_tests">Favourite / Common Tests</label>
+                    <input type="text" id="favourite_tests" name="favourite_tests"
+                           placeholder="e.g. FBC, LFT, UEC, TFT">
+                </div>
+
+                <div class="form-group">
+                    <label for="test_list">Full Test List</label>
+                    <textarea id="test_list" name="test_list" rows="3"
+                              placeholder="List all requested tests, one per line or comma separated"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="clinical_details">Clinical Details *</label>
+                    <textarea id="clinical_details" name="clinical_details" rows="3" required
+                              placeholder="Reason for request, relevant clinical information"></textarea>
+                </div>
+
+                <!-- Cytology Section -->
+                <hr style="margin:1.2rem 0; border-color:#e2e8f0;">
+                <h3 style="color:#2c5282; margin-bottom:0.75rem;">🔬 Cytology / HPV</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="last_cytology" name="last_cytology" value="1"
+                                   onchange="document.getElementById('cytology_date_row').style.display=this.checked?'block':'none'">
+                            Last Cytology Test Done
+                        </label>
+                        <div id="cytology_date_row" style="display:none; margin-top:0.5rem;">
+                            <label for="cytology_date">Cytology Date</label>
+                            <input type="date" id="cytology_date" name="cytology_date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="hpv_not_required" name="hpv_not_required" value="1"
+                                   onchange="document.getElementById('hpv_reason_row').style.display=this.checked?'block':'none'">
+                            HPV Not Required
+                        </label>
+                        <div id="hpv_reason_row" style="display:none; margin-top:0.5rem;">
+                            <label for="hpv_reason">Reason HPV Not Required</label>
+                            <input type="text" id="hpv_reason" name="hpv_reason"
+                                   placeholder="State reason">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gynaecological Info -->
+                <hr style="margin:1.2rem 0; border-color:#e2e8f0;">
+                <h3 style="color:#2c5282; margin-bottom:0.75rem;">👩‍⚕️ Gynaecological Information</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pregnancy_status">Pregnancy Status</label>
+                        <select id="pregnancy_status" name="pregnancy_status">
+                            <option value="">Select</option>
+                            <option value="Not Pregnant">Not Pregnant</option>
+                            <option value="Pregnant">Pregnant</option>
+                            <option value="Post-Menopausal">Post-Menopausal</option>
+                            <option value="Unknown">Unknown</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="contraception_method">Contraception Method</label>
+                        <select id="contraception_method" name="contraception_method">
+                            <option value="">Select</option>
+                            <option value="None">None</option>
+                            <option value="OCP">OCP (Oral Contraceptive Pill)</option>
+                            <option value="IUD">IUD</option>
+                            <option value="Implant">Implant</option>
+                            <option value="Condom">Condom</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Abnormal Bleeding</label>
+                    <div style="display:flex; gap:1.5rem; margin-top:0.3rem;">
+                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                            <input type="radio" name="abnormal_bleeding" value="Yes"> Yes
+                        </label>
+                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                            <input type="radio" name="abnormal_bleeding" value="No"> No
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <hr style="margin:1.2rem 0; border-color:#e2e8f0;">
+                <h3 style="color:#2c5282; margin-bottom:0.75rem;">📝 Additional Information</h3>
+
+                <div class="form-group">
+                    <label for="clinical_notes">Clinical Notes</label>
+                    <textarea id="clinical_notes" name="clinical_notes" rows="3"
+                              placeholder="Any additional clinical notes"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="collection_by">Sample Collected By</label>
+                        <input type="text" id="collection_by" name="collection_by"
+                               placeholder="Name of collector">
+                    </div>
+                    <div class="form-group">
+                        <label for="fasting_status">Fasting Status</label>
+                        <select id="fasting_status" name="fasting_status">
+                            <option value="">Select</option>
+                            <option value="Fasting">Fasting</option>
+                            <option value="Non-Fasting">Non-Fasting</option>
+                            <option value="Random">Random</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="billing_type">Billing Type</label>
+                        <select id="billing_type" name="billing_type">
+                            <option value="">Select</option>
+                            <option value="Private">Private</option>
+                            <option value="Concession">Concession</option>
+                            <option value="Direct Bill">Direct Bill</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="copy_to">Copy Report To</label>
+                        <input type="text" id="copy_to" name="copy_to"
+                               placeholder="e.g. GP name, specialist">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Save Pathology Request</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        initPatientSearch('patient_name', 'patient_id', 'path_confirm');
+        document.getElementById('path_confirm').style.display = 'inline-block';
+    });
+</script>
+{% endblock %}

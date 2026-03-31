@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}Analytics Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+            <div>
+                <h1 style="margin:0;">📊 Analytics Dashboard</h1>
+                <p style="margin:0.25rem 0 0; color:#64748b;">Hospital activity overview and insights</p>
+            </div>
+            <!-- Period selector -->
+            <form method="GET" action="{{ url_for('analytics') }}" style="display:flex; align-items:center; gap:0.5rem;">
+                <label style="font-weight:600; color:#374151;">Show period:</label>
+                <select name="period" onchange="this.form.submit()"
+                        style="padding:0.4rem 0.75rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem;">
+                    <option value="1"  {% if period==1  %}selected{% endif %}>This Month</option>
+                    <option value="2"  {% if period==2  %}selected{% endif %}>Last 2 Months</option>
+                    <option value="3"  {% if period==3  %}selected{% endif %}>Last 3 Months</option>
+                    <option value="6"  {% if period==6  %}selected{% endif %}>Last 6 Months</option>
+                    <option value="12" {% if period==12 %}selected{% endif %}>This Year (12 months)</option>
+                    <option value="24" {% if period==24 %}selected{% endif %}>Last 2 Years</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- ── KPI Cards ── -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem;">
+            {% set cards = [
+                ('👤','Total Patients', data.total_patients, '#3b82f6','#eff6ff'),
+                ('📅','Appointments', data.period_appointments, '#f59e0b','#fffbeb'),
+                ('🩺','Diagnoses', data.period_diagnosis, '#8b5cf6','#f5f3ff'),
+                ('🧪','Lab Reports', data.period_labs, '#06b6d4','#ecfeff'),
+                ('💊','Treatments', data.period_treatments, '#10b981','#f0fdf4'),
+                ('📷','Radiology', data.period_radiology, '#ef4444','#fef2f2'),
+                ('🧫','Pathology', data.period_pathology, '#d97706','#fffbeb'),
+                ('🔬','Malaria Tests', data.total_malaria, '#6366f1','#eef2ff'),
+            ] %}
+            {% for icon, label, value, color, bg in cards %}
+            <div style="background:{{ bg }}; border:1px solid {{ color }}33; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.8rem;">{{ icon }}</div>
+                <div style="font-size:1.6rem; font-weight:700; color:{{ color }};">{{ value }}</div>
+                <div style="font-size:0.78rem; color:#64748b; margin-top:0.2rem;">{{ label }}</div>
+                {% if label != 'Total Patients' and label != 'Malaria Tests' %}
+                <div style="font-size:0.7rem; color:#94a3b8;">last {{ period }} month{% if period > 1 %}s{% endif %}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ── Period patients highlight ── -->
+        <div style="background:linear-gradient(135deg,#1e40af,#3b82f6); color:white; border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <div style="font-size:0.85rem; opacity:0.85;">New Patients — last {{ period }} month{% if period > 1 %}s{% endif %}</div>
+                <div style="font-size:2.5rem; font-weight:700;">{{ data.period_patients }}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:0.85rem; opacity:0.85;">All-time Total</div>
+                <div style="font-size:2.5rem; font-weight:700;">{{ data.total_patients }}</div>
+            </div>
+        </div>
+
+        <!-- ── Charts row 1 ── -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+
+            <!-- Patients per month line chart -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+                <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">📈 New Patients per Month</h3>
+                <canvas id="patientsChart" height="200"></canvas>
+            </div>
+
+            <!-- Malaria pie chart -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+                <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">🔬 Malaria Results</h3>
+                <canvas id="malariaDonut" height="200"></canvas>
+                <div style="display:flex; justify-content:center; gap:1.5rem; margin-top:0.75rem; font-size:0.85rem;">
+                    <span style="color:#ef4444;">● Infected: {{ data.malaria_infected }}</span>
+                    <span style="color:#22c55e;">● Uninfected: {{ data.malaria_uninfected }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Charts row 2 ── -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+
+            <!-- Malaria by month bar chart -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+                <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">📊 Malaria Trend (12 months)</h3>
+                <canvas id="malariaTrend" height="200"></canvas>
+            </div>
+
+            <!-- Gender distribution -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+                <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">👥 Patient Gender Distribution</h3>
+                <canvas id="genderChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- ── Charts row 3 ── -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+
+            <!-- Malaria severity -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+                <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">⚠️ Malaria Severity Breakdown</h3>
+                <canvas id="severityChart" height="200"></canvas>
+            </div>
+
+            <!-- Appointment status -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+                <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">📅 Appointment Status</h3>
+                <canvas id="aptChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- ── Module activity bar ── -->
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
+            <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">🏥 Module Activity (last {{ period }} month{% if period > 1 %}s{% endif %})</h3>
+            <canvas id="moduleChart" height="100"></canvas>
+        </div>
+
+        <!-- ── Recent patients table ── -->
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+            <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1rem;">🕐 Recently Registered Patients</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                        <th style="padding:0.6rem 0.75rem; text-align:left;">Patient ID</th>
+                        <th style="padding:0.6rem 0.75rem; text-align:left;">Name</th>
+                        <th style="padding:0.6rem 0.75rem; text-align:left;">Gender</th>
+                        <th style="padding:0.6rem 0.75rem; text-align:left;">Registered</th>
+                        <th style="padding:0.6rem 0.75rem;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in data.recent_patients %}
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:0.6rem 0.75rem; font-weight:600; color:#3b82f6;">{{ p.patient_id }}</td>
+                        <td style="padding:0.6rem 0.75rem;">{{ p.patient_firstname }} {{ p.patient_lastname }}</td>
+                        <td style="padding:0.6rem 0.75rem;">{{ p.gender }}</td>
+                        <td style="padding:0.6rem 0.75rem; color:#64748b; font-size:0.85rem;">{{ p.created_at.strftime('%d %b %Y') if p.created_at else '—' }}</td>
+                        <td style="padding:0.6rem 0.75rem;">
+                            <a href="{{ url_for('patient_detail', patient_id=p.patient_id) }}"
+                               style="color:#3b82f6; font-size:0.85rem;">View →</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Data from Flask ──
+const patientMonths = {{ data.patients_by_month | map(attribute='month') | list | tojson }};
+const patientCounts = {{ data.patients_by_month | map(attribute='cnt')   | list | tojson }};
+
+const malariaMonths    = {{ data.malaria_by_month | map(attribute='month')     | list | tojson }};
+const malariaInfected  = {{ data.malaria_by_month | map(attribute='infected')  | list | tojson }};
+const malariaUninfected= {{ data.malaria_by_month | map(attribute='uninfected')| list | tojson }};
+
+const genderLabels = {{ data.gender_dist | map(attribute='gender') | list | tojson }};
+const genderCounts = {{ data.gender_dist | map(attribute='cnt')    | list | tojson }};
+
+const severityLabels = {{ data.malaria_severity | map(attribute='severity') | list | tojson }};
+const severityCounts = {{ data.malaria_severity | map(attribute='cnt')      | list | tojson }};
+
+const aptLabels = {{ data.apt_status | map(attribute='status') | list | tojson }};
+const aptCounts = {{ data.apt_status | map(attribute='cnt')    | list | tojson }};
+
+// ── 1. Patients per month line chart ──
+new Chart(document.getElementById('patientsChart'), {
+    type: 'line',
+    data: {
+        labels: patientMonths,
+        datasets: [{
+            label: 'New Patients',
+            data: patientCounts,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#3b82f6',
+            pointRadius: 4
+        }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+// ── 2. Malaria donut ──
+new Chart(document.getElementById('malariaDonut'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Infected', 'Uninfected'],
+        datasets: [{ data: [{{ data.malaria_infected }}, {{ data.malaria_uninfected }}],
+            backgroundColor: ['#ef4444','#22c55e'], borderWidth: 2 }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+});
+
+// ── 3. Malaria trend bar ──
+new Chart(document.getElementById('malariaTrend'), {
+    type: 'bar',
+    data: {
+        labels: malariaMonths,
+        datasets: [
+            { label: 'Infected',   data: malariaInfected,   backgroundColor: '#ef4444' },
+            { label: 'Uninfected', data: malariaUninfected, backgroundColor: '#22c55e' }
+        ]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: false }, y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+// ── 4. Gender pie ──
+new Chart(document.getElementById('genderChart'), {
+    type: 'pie',
+    data: {
+        labels: genderLabels,
+        datasets: [{ data: genderCounts,
+            backgroundColor: ['#3b82f6','#ec4899','#a78bfa'], borderWidth: 2 }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+});
+
+// ── 5. Severity bar ──
+new Chart(document.getElementById('severityChart'), {
+    type: 'bar',
+    data: {
+        labels: severityLabels,
+        datasets: [{ label: 'Cases', data: severityCounts,
+            backgroundColor: ['#dc2626','#f97316','#facc15','#4ade80'] }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+// ── 6. Appointment status doughnut ──
+new Chart(document.getElementById('aptChart'), {
+    type: 'doughnut',
+    data: {
+        labels: aptLabels,
+        datasets: [{ data: aptCounts,
+            backgroundColor: ['#3b82f6','#22c55e','#ef4444'], borderWidth: 2 }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+});
+
+// ── 7. Module activity horizontal bar ──
+new Chart(document.getElementById('moduleChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Appointments','Diagnoses','Lab Reports','Treatments','Radiology','Pathology'],
+        datasets: [{
+            label: 'Records',
+            data: [
+                {{ data.period_appointments }},
+                {{ data.period_diagnosis }},
+                {{ data.period_labs }},
+                {{ data.period_treatments }},
+                {{ data.period_radiology }},
+                {{ data.period_pathology }}
+            ],
+            backgroundColor: ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#ef4444','#d97706']
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+</script>
+{% endblock %}

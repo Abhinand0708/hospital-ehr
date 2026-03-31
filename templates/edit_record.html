@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ record_type|replace('_',' ')|title }}{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('patient_detail', patient_id=record.patient_id) }}" class="btn-back">← Back to Patient</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    <div class="page-content">
+        <h1>✏️ Edit {{ record_type|replace('_',' ')|title }}</h1>
+        <p>Record ID: <strong>{{ record_id }}</strong></p>
+        <div class="form-container">
+            <form method="POST" class="hospital-form">
+                <!-- Hidden fields -->
+                <input type="hidden" name="patient_id" value="{{ record.patient_id }}">
+
+                {% if record_type == 'appointment' %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" name="patient_name" value="{{ record.patient_name or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Patient Email</label>
+                        <input type="email" name="patient_email" value="{{ record.patient_email or '' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Doctor Name *</label>
+                        <input type="text" name="doctor_name" value="{{ record.doctor_name or '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status">
+                            {% for s in ['Scheduled','Completed','Cancelled'] %}
+                            <option value="{{ s }}" {% if record.status == s %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Appointment Date *</label>
+                        <input type="date" name="appointment_date" value="{{ record.appointment_date }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Appointment Time *</label>
+                        <input type="time" name="appointment_time" value="{{ record.appointment_time }}" required>
+                    </div>
+                </div>
+
+                {% elif record_type == 'diagnosis' %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" name="patient_name" value="{{ record.patient_name or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Diagnosis Date *</label>
+                        <input type="date" name="diagnosis_date" value="{{ record.diagnosis_date }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Symptoms</label>
+                    <textarea name="symptoms" rows="2">{{ record.symptoms or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Observations</label>
+                    <textarea name="observations" rows="2">{{ record.observations or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Provisional Diagnosis</label>
+                    <textarea name="provisional_diagnosis" rows="2">{{ record.provisional_diagnosis or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tests Ordered</label>
+                    <textarea name="tests" rows="2">{{ record.tests or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Final Diagnosis</label>
+                    <textarea name="final_diagnosis" rows="2">{{ record.final_diagnosis or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Treatment Plan</label>
+                    <textarea name="treatment_plan" rows="2">{{ record.treatment_plan or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Follow Up</label>
+                    <textarea name="follow_up" rows="2">{{ record.follow_up or '' }}</textarea>
+                </div>
+
+                {% elif record_type == 'lab_report' %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" name="patient_name" value="{{ record.patient_name or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Test Date *</label>
+                        <input type="date" name="test_date" value="{{ record.test_date }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Physician</label>
+                    <input type="text" name="physician" value="{{ record.physician or '' }}">
+                </div>
+                <h3 style="color:#2c5282; margin:1rem 0 0.5rem;">Blood Tests</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Hemoglobin</label><input type="text" name="hemoglobin" value="{{ record.hemoglobin or '' }}"></div>
+                    <div class="form-group"><label>RBC Count</label><input type="text" name="rbc" value="{{ record.rbc or '' }}"></div>
+                    <div class="form-group"><label>WBC Count</label><input type="text" name="wbc" value="{{ record.wbc or '' }}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Platelets</label><input type="text" name="platelets" value="{{ record.platelets or '' }}"></div>
+                    <div class="form-group"><label>Glucose</label><input type="text" name="glucose" value="{{ record.glucose or '' }}"></div>
+                    <div class="form-group"><label>Urea</label><input type="text" name="urea" value="{{ record.urea or '' }}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Creatinine</label><input type="text" name="creatinine" value="{{ record.creatinine or '' }}"></div>
+                    <div class="form-group"><label>Cholesterol</label><input type="text" name="cholesterol" value="{{ record.cholesterol or '' }}"></div>
+                </div>
+                <div class="form-group">
+                    <label>Microbiology Findings</label>
+                    <textarea name="microbiology_findings" rows="2">{{ record.microbiology_findings or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Other Tests</label>
+                    <textarea name="other_tests" rows="2">{{ record.other_tests or '' }}</textarea>
+                </div>
+
+                {% elif record_type == 'treatment' %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" name="patient_name" value="{{ record.patient_name or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Treatment Date *</label>
+                        <input type="date" name="treatment_date" value="{{ record.treatment_date }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Diagnosis</label>
+                    <textarea name="diagnosis" rows="2">{{ record.diagnosis or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Medications *</label>
+                    <textarea name="medications" rows="3" required>{{ record.medications or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Procedures</label>
+                    <textarea name="procedures" rows="2">{{ record.procedures or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Therapy Plan</label>
+                    <textarea name="therapy_plan" rows="2">{{ record.therapy_plan or '' }}</textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Diet</label>
+                        <textarea name="diet" rows="2">{{ record.diet or '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Lifestyle</label>
+                        <textarea name="lifestyle" rows="2">{{ record.lifestyle or '' }}</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Follow Up</label>
+                    <textarea name="follow_up" rows="2">{{ record.follow_up or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Additional Notes</label>
+                    <textarea name="additional_notes" rows="2">{{ record.additional_notes or '' }}</textarea>
+                </div>
+
+                {% elif record_type == 'medical_history' %}
+                <div class="form-group">
+                    <label>Patient Name</label>
+                    <input type="text" name="patient_name" value="{{ record.patient_name or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Chronic Illnesses</label>
+                    <textarea name="chronic_illnesses" rows="2">{{ record.chronic_illnesses or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Surgeries</label>
+                    <textarea name="surgeries" rows="2">{{ record.surgeries or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Current Medications</label>
+                    <textarea name="current_medications" rows="2">{{ record.current_medications or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Allergies</label>
+                    <textarea name="allergies" rows="2">{{ record.allergies or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hospitalizations</label>
+                    <textarea name="hospitalizations" rows="2">{{ record.hospitalizations or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Family History</label>
+                    <textarea name="family_history" rows="2">{{ record.family_history or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Immunizations</label>
+                    <textarea name="immunizations" rows="2">{{ record.immunizations or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Social History</label>
+                    <textarea name="social_history" rows="2">{{ record.social_history or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Other Conditions</label>
+                    <textarea name="other_conditions" rows="2">{{ record.other_conditions or '' }}</textarea>
+                </div>
+                {% endif %}
+
+                <div style="display:flex; gap:1rem; margin-top:1rem;">
+                    <button type="submit" class="btn-submit" style="margin-top:0;">✓ Save Changes</button>
+                    <a href="{{ url_for('patient_detail', patient_id=record.patient_id) }}"
+                       style="padding:0.75rem 1.5rem; background:#6b7280; color:white; border-radius:8px; text-decoration:none;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

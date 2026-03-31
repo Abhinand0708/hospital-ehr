@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Treatment{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    <div class="page-content">
+        <h1>💊 Treatment</h1>
+        <p>Treatment plans and prescriptions — Treatment ID is auto-generated</p>
+        <div class="form-container">
+            <form method="POST" class="hospital-form">
+                <div class="info-box" style="margin-bottom:20px;">
+                    <strong>ℹ️</strong> Treatment ID is auto-generated (TRT-YYYYMMDD-NNN). Patient ID is auto-looked up from name.
+                </div>
+                <div class="form-row">
+                    <div class="form-group patient-search-wrap">
+                        <label for="patient_name">Patient Full Name *</label>
+                        <input type="text" id="patient_name" name="patient_name" required
+                               placeholder="Type name to search..." autocomplete="off">
+                        <span id="trt_confirm" class="patient-id-confirmed" style="display:none;"></span>
+                        <small style="color:#6b7280;font-size:12px;">Type at least 2 letters — select from dropdown</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID (auto-filled)</label>
+                        <input type="text" id="patient_id" name="patient_id"
+                               placeholder="Auto-filled when you select a patient" readonly
+                               style="background:#f9fafb;">
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        initPatientSearch('patient_name', 'patient_id', 'trt_confirm');
+                        document.getElementById('trt_confirm').style.display = 'inline-block';
+                    });
+                </script>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="treatment_date">Treatment Date *</label>
+                        <input type="date" id="treatment_date" name="treatment_date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="diagnosis">Diagnosis *</label>
+                    <textarea id="diagnosis" name="diagnosis" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="medications">Medications Prescribed *</label>
+                    <textarea id="medications" name="medications" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="procedures">Procedures</label>
+                    <textarea id="procedures" name="procedures" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="therapy_plan">Therapy Plan</label>
+                    <textarea id="therapy_plan" name="therapy_plan" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="diet">Diet Recommendations</label>
+                    <textarea id="diet" name="diet" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="lifestyle">Lifestyle Modifications</label>
+                    <textarea id="lifestyle" name="lifestyle" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="follow_up">Follow-up Schedule</label>
+                    <textarea id="follow_up" name="follow_up" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="additional_notes">Additional Notes</label>
+                    <textarea id="additional_notes" name="additional_notes" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Save Treatment Plan</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

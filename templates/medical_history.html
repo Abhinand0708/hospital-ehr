@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Medical History{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    <div class="page-content">
+        <h1>📋 Medical History</h1>
+        <p>Complete patient medical history — Record ID is auto-generated</p>
+        <div class="form-container">
+            <form method="POST" class="hospital-form">
+                <div class="info-box" style="margin-bottom:20px;">
+                    <strong>ℹ️</strong> Record ID is auto-generated (MED-YYYYMMDD-NNN). Patient ID is auto-looked up from name.
+                </div>
+                <div class="form-row">
+                    <div class="form-group patient-search-wrap">
+                        <label for="patient_name">Patient Full Name *</label>
+                        <input type="text" id="patient_name" name="patient_name" required
+                               placeholder="Type name to search..." autocomplete="off">
+                        <span id="med_confirm" class="patient-id-confirmed" style="display:none;"></span>
+                        <small style="color:#6b7280;font-size:12px;">Type at least 2 letters — select from dropdown</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID (auto-filled)</label>
+                        <input type="text" id="patient_id" name="patient_id"
+                               placeholder="Auto-filled when you select a patient" readonly
+                               style="background:#f9fafb;">
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        initPatientSearch('patient_name', 'patient_id', 'med_confirm');
+                        document.getElementById('med_confirm').style.display = 'inline-block';
+                    });
+                </script>
+                <div class="form-group">
+                    <label for="chronic_illnesses">Chronic Illnesses</label>
+                    <textarea id="chronic_illnesses" name="chronic_illnesses" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="surgeries">Past Surgeries</label>
+                    <textarea id="surgeries" name="surgeries" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="current_medications">Current Medications</label>
+                    <textarea id="current_medications" name="current_medications" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="allergies">Allergies</label>
+                    <textarea id="allergies" name="allergies" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="hospitalizations">Previous Hospitalizations</label>
+                    <textarea id="hospitalizations" name="hospitalizations" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="family_history">Family Medical History</label>
+                    <textarea id="family_history" name="family_history" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="immunizations">Immunization Records</label>
+                    <textarea id="immunizations" name="immunizations" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="social_history">Social History (Smoking, Alcohol, etc.)</label>
+                    <textarea id="social_history" name="social_history" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="other_conditions">Other Medical Conditions</label>
+                    <textarea id="other_conditions" name="other_conditions" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Save Medical History</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

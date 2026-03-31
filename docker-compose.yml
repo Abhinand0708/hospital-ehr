@@ -1,0 +1,42 @@
+services:
+
+  # ── MySQL Database ──────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: ehr_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: electronic_health_records
+    ports:
+      - "3307:3306"        # host:container (3307 avoids conflict with local MySQL)
+    volumes:
+      - mysql_data:/var/lib/mysql   # data persists even if container restarts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Flask Application ───────────────────────────────────────────
+  web:
+    build: .
+    container_name: ehr_web
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy   # wait for MySQL to be ready
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: electronic_health_records
+      PORT: "5001"
+    volumes:
+      - ./static/uploads:/app/static/uploads   # uploads persist on your machine
+      - ./data:/app/data
+
+volumes:
+  mysql_data:

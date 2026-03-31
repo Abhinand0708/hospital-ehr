@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Lab Report{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand"><h2>🏥 Hospital Management System</h2></div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    <div class="page-content">
+        <h1>🧪 Lab Report</h1>
+        <p>Laboratory test results — Report ID is auto-generated</p>
+        <div class="form-container">
+            <form method="POST" class="hospital-form">
+                <div class="info-box" style="margin-bottom:20px;">
+                    <strong>ℹ️</strong> Report ID is auto-generated (LAB-YYYYMMDD-NNN). Patient ID is auto-looked up from name.
+                </div>
+                <div class="form-row">
+                    <div class="form-group patient-search-wrap">
+                        <label for="patient_name">Patient Full Name *</label>
+                        <input type="text" id="patient_name" name="patient_name" required
+                               placeholder="Type name to search..." autocomplete="off">
+                        <span id="lab_confirm" class="patient-id-confirmed" style="display:none;"></span>
+                        <small style="color:#6b7280;font-size:12px;">Type at least 2 letters — select from dropdown</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID (auto-filled)</label>
+                        <input type="text" id="patient_id" name="patient_id"
+                               placeholder="Auto-filled when you select a patient" readonly
+                               style="background:#f9fafb;">
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        initPatientSearch('patient_name', 'patient_id', 'lab_confirm');
+                        document.getElementById('lab_confirm').style.display = 'inline-block';
+                    });
+                </script>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="test_date">Test Date *</label>
+                        <input type="date" id="test_date" name="test_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="physician">Physician Name</label>
+                        <input type="text" id="physician" name="physician">
+                    </div>
+                </div>
+                <h3 class="section-title">Blood Test Results</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hemoglobin">Hemoglobin (g/dL)</label>
+                        <input type="text" id="hemoglobin" name="hemoglobin">
+                    </div>
+                    <div class="form-group">
+                        <label for="rbc">RBC Count (million/μL)</label>
+                        <input type="text" id="rbc" name="rbc">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="wbc">WBC Count (cells/μL)</label>
+                        <input type="text" id="wbc" name="wbc">
+                    </div>
+                    <div class="form-group">
+                        <label for="platelets">Platelets (cells/μL)</label>
+                        <input type="text" id="platelets" name="platelets">
+                    </div>
+                </div>
+                <h3 class="section-title">Biochemistry</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="glucose">Glucose (mg/dL)</label>
+                        <input type="text" id="glucose" name="glucose">
+                    </div>
+                    <div class="form-group">
+                        <label for="urea">Urea (mg/dL)</label>
+                        <input type="text" id="urea" name="urea">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="creatinine">Creatinine (mg/dL)</label>
+                        <input type="text" id="creatinine" name="creatinine">
+                    </div>
+                    <div class="form-group">
+                        <label for="cholesterol">Cholesterol (mg/dL)</label>
+                        <input type="text" id="cholesterol" name="cholesterol">
+                    </div>
+                </div>
+                <h3 class="section-title">Additional Tests</h3>
+                <div class="form-group">
+                    <label for="microbiology_findings">Microbiology Findings</label>
+                    <textarea id="microbiology_findings" name="microbiology_findings" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="xray">X-Ray Results</label>
+                        <input type="text" id="xray" name="xray">
+                    </div>
+                    <div class="form-group">
+                        <label for="ct_scan">CT Scan Results</label>
+                        <input type="text" id="ct_scan" name="ct_scan">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="mri">MRI Results</label>
+                        <input type="text" id="mri" name="mri">
+                    </div>
+                    <div class="form-group">
+                        <label for="ultrasound">Ultrasound Results</label>
+                        <input type="text" id="ultrasound" name="ultrasound">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="other_tests">Other Tests</label>
+                    <textarea id="other_tests" name="other_tests" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Save Lab Report</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

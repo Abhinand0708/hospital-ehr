@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hospital Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Patient autocomplete widget */
+        .patient-search-wrap { position: relative; }
+        .patient-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; z-index: 999;
+            background: white; border: 1px solid #d1d5db; border-top: none;
+            border-radius: 0 0 8px 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            max-height: 280px; overflow-y: auto; display: none;
+        }
+        .patient-dropdown.open { display: block; }
+        .pd-item {
+            padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f3f4f6;
+            transition: background 0.15s;
+        }
+        .pd-item:hover, .pd-item.active { background: #eff6ff; }
+        .pd-item .pd-name { font-weight: 600; color: #1e3a5f; font-size: 0.95rem; }
+        .pd-item .pd-meta { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+        .pd-item .pd-id { color: #2563eb; font-weight: 600; }
+        .pd-empty { padding: 12px 14px; color: #9ca3af; font-size: 0.85rem; text-align: center; }
+        .patient-id-confirmed {
+            display: inline-block; margin-top: 6px; padding: 4px 12px;
+            background: #d1fae5; color: #065f46; border-radius: 6px;
+            font-size: 0.82rem; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <script>
+    // Reusable patient autocomplete
+    function initPatientSearch(nameInputId, idInputId, confirmId) {
+        const nameInput = document.getElementById(nameInputId);
+        const idInput   = document.getElementById(idInputId);
+        const confirm   = document.getElementById(confirmId);
+        if (!nameInput) return;
+
+        // Create dropdown
+        const wrap = nameInput.parentElement;
+        wrap.style.position = 'relative';
+        const dropdown = document.createElement('div');
+        dropdown.className = 'patient-dropdown';
+        wrap.appendChild(dropdown);
+
+        let debounce;
+        nameInput.addEventListener('input', () => {
+            clearTimeout(debounce);
+            const q = nameInput.value.trim();
+            if (q.length < 2) { dropdown.classList.remove('open'); return; }
+            debounce = setTimeout(() => fetchPatients(q), 250);
+        });
+
+        nameInput.addEventListener('keydown', (e) => {
+            const items = dropdown.querySelectorAll('.pd-item');
+            const active = dropdown.querySelector('.pd-item.active');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!active) items[0]?.classList.add('active');
+                else { active.classList.remove('active'); (active.nextElementSibling || items[0])?.classList.add('active'); }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (active) { active.classList.remove('active'); (active.previousElementSibling || items[items.length-1])?.classList.add('active'); }
+            } else if (e.key === 'Enter' && active) {
+                e.preventDefault(); active.click();
+            } else if (e.key === 'Escape') {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!wrap.contains(e.target)) dropdown.classList.remove('open');
+        });
+
+        function fetchPatients(q) {
+            fetch(`/api/search-patients?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    if (!data.length) {
+                        dropdown.innerHTML = '<div class="pd-empty">No patients found</div>';
+                        dropdown.classList.add('open'); return;
+                    }
+                    data.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'pd-item';
+                        div.innerHTML = `
+                            <div class="pd-name">${p.full_name}</div>
+                            <div class="pd-meta">
+                                <span class="pd-id">ID: ${p.patient_id}</span>
+                                &nbsp;·&nbsp; DOB: ${p.dob}
+                                &nbsp;·&nbsp; Phone: ${p.phone || '—'}
+                            </div>`;
+                        div.addEventListener('click', () => {
+                            nameInput.value = p.full_name;
+                            idInput.value   = p.patient_id;
+                            if (confirm) confirm.textContent = '✓ Patient ID: ' + p.patient_id;
+                            dropdown.classList.remove('open');
+                        });
+                        dropdown.appendChild(div);
+                    });
+                    dropdown.classList.add('open');
+                });
+        }
+    }
+    </script>
+</body>
+</html>

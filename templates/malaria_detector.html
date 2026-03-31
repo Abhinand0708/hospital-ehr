@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}Malaria AI Detector{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🏥 Hospital Management System</h2>
+        </div>
+        <div class="navbar-user">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="page-content">
+        <div class="page-header">
+            <div>
+                <h1>🔬 Malaria AI Detector</h1>
+                <p>AI-powered malaria detection from blood smear images</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-stats" onclick="toggleView('analysis')">🔬 New Analysis</button>
+                <button class="btn-stats" onclick="toggleView('statistics')">📊 Statistics</button>
+            </div>
+        </div>
+        
+        <!-- Statistics Dashboard -->
+        <div class="statistics-container" id="statisticsView" style="display:none;">
+            <h2 class="stats-title">📊 Statistics Dashboard</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card stat-blue">
+                    <div class="stat-label">Total Patients</div>
+                    <div class="stat-value" id="totalPatients">0</div>
+                </div>
+                <div class="stat-card stat-red">
+                    <div class="stat-label">Infected</div>
+                    <div class="stat-value" id="infectedCount">0</div>
+                </div>
+                <div class="stat-card stat-green">
+                    <div class="stat-label">Uninfected</div>
+                    <div class="stat-value" id="uninfectedCount">0</div>
+                </div>
+                <div class="stat-card stat-purple">
+                    <div class="stat-label">Infection Rate</div>
+                    <div class="stat-value" id="infectionRate">0%</div>
+                </div>
+            </div>
+            
+            <div class="severity-breakdown">
+                <h3>Severity Breakdown</h3>
+                <div class="severity-grid">
+                    <div class="severity-item">
+                        <div class="severity-count" id="criticalCount">0</div>
+                        <div class="severity-label">Critical</div>
+                    </div>
+                    <div class="severity-item">
+                        <div class="severity-count" id="highCount">0</div>
+                        <div class="severity-label">High</div>
+                    </div>
+                    <div class="severity-item">
+                        <div class="severity-count" id="moderateCount">0</div>
+                        <div class="severity-label">Moderate</div>
+                    </div>
+                    <div class="severity-item">
+                        <div class="severity-count" id="lowCount">0</div>
+                        <div class="severity-label">Low</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-container" id="analysisForm">
+            <form id="malariaForm" enctype="multipart/form-data" class="hospital-form">
+                <h3 class="section-title">Patient Information</h3>
+
+                <div class="form-row">
+                    <div class="form-group patient-search-wrap">
+                        <label for="name">Patient Name *</label>
+                        <input type="text" id="name" name="name" required
+                               placeholder="Type name to search registered patients..."
+                               autocomplete="off">
+                        <span id="mal_confirm" class="patient-id-confirmed" style="display:none;"></span>
+                        <small style="color:#6b7280;font-size:12px;">Type 2+ letters to pick from registered patients, or type a new name</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID (auto-filled)</label>
+                        <input type="text" id="patient_id" name="patient_id"
+                               placeholder="Auto-filled when you select a patient"
+                               style="background:#f9fafb;">
+                        <small style="color:#6b7280;font-size:12px;">Leave blank if patient is not registered</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="age">Age *</label>
+                        <input type="number" id="age" name="age" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender *</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact">Contact Number</label>
+                    <input type="tel" id="contact" name="contact">
+                </div>
+                <div class="form-group">
+                    <label for="doctor_name">Doctor Name</label>
+                    <input type="text" id="doctor_name" name="doctor_name" value="Dr. Medical Professional">
+                </div>
+                
+                <div class="form-group">
+                    <label for="symptoms">Symptoms (Optional)</label>
+                    <textarea id="symptoms" name="symptoms" rows="3" placeholder="Describe patient symptoms: fever, chills, headache, etc."></textarea>
+                </div>
+                
+                <h3 class="section-title">Cell Image (Microscopic Blood Smear)</h3>
+                
+                <div class="upload-section">
+                    <div class="upload-icon">📤</div>
+                    <p>Click to upload or drag and drop</p>
+                    <p style="font-size: 12px; color: #999;">Supports: JPG, PNG (Max 10MB)</p>
+                    
+                    <div class="form-group">
+                        <label for="blood_image" class="file-label">Choose Image File</label>
+                        <input type="file" id="blood_image" name="image" accept="image/*" required>
+                        <span class="file-name" id="fileName">No file chosen</span>
+                    </div>
+                    
+                    <div class="image-preview" id="imagePreview">
+                        <img id="previewImg" src="" alt="Preview" style="display:none;">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit btn-analyze" id="analyzeBtn">
+                    <span id="btnText">🔍 Analyze</span>
+                    <span id="btnLoading" style="display:none;">⏳ Analyzing...</span>
+                </button>
+            </form>
+        </div>
+        
+        <!-- Result Section -->
+        <div class="result-container" id="resultContainer" style="display:none;">
+            <div class="result-header" id="resultHeader">
+                <h2 id="resultTitle">Infected</h2>
+                <p id="resultConfidence">Confidence: 95.74%</p>
+                <p id="resultSeverity" class="severity-badge">CRITICAL RISK</p>
+            </div>
+            
+            <div class="result-details-grid">
+                <div class="detail-card">
+                    <label>PATIENT ID</label>
+                    <p id="patientId">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>PATIENT NAME</label>
+                    <p id="patientName">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>AGE</label>
+                    <p id="patientAge">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>GENDER</label>
+                    <p id="patientGender">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>CONTACT</label>
+                    <p id="patientContact">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>DOCTOR</label>
+                    <p id="doctorName">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>ANALYSIS DATE</label>
+                    <p id="analysisDate">-</p>
+                </div>
+                <div class="detail-card">
+                    <label>ANALYSIS TIME</label>
+                    <p id="analysisTime">-</p>
+                </div>
+            </div>
+            
+            <div class="treatment-section">
+                <h3>💊 Treatment Recommendation</h3>
+                <p id="treatmentText">-</p>
+            </div>
+            
+            <div class="notice-section">
+                <h3>⚠️ Important Notice:</h3>
+                <p id="noticeText">Malaria infection detected. Immediate medical attention is URGENTLY required. This is an AI-assisted diagnosis and should be confirmed by a qualified medical professional.</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-action btn-new" onclick="newAnalysis()">🔬 New Analysis</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// View toggle functionality
+function toggleView(view) {
+    const analysisForm = document.getElementById('analysisForm');
+    const resultContainer = document.getElementById('resultContainer');
+    const statisticsView = document.getElementById('statisticsView');
+    
+    if (view === 'analysis') {
+        analysisForm.style.display = 'block';
+        resultContainer.style.display = 'none';
+        statisticsView.style.display = 'none';
+    } else if (view === 'statistics') {
+        analysisForm.style.display = 'none';
+        resultContainer.style.display = 'none';
+        statisticsView.style.display = 'block';
+        loadStatistics();
+    }
+}
+
+// Load statistics from API
+async function loadStatistics() {
+    try {
+        const response = await fetch('/api/malaria-statistics');
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('totalPatients').textContent = data.total;
+            document.getElementById('infectedCount').textContent = data.infected;
+            document.getElementById('uninfectedCount').textContent = data.uninfected;
+            document.getElementById('infectionRate').textContent = data.infection_rate + '%';
+            
+            document.getElementById('criticalCount').textContent = data.severity_counts.Critical || 0;
+            document.getElementById('highCount').textContent = data.severity_counts.High || 0;
+            document.getElementById('moderateCount').textContent = data.severity_counts.Moderate || 0;
+            document.getElementById('lowCount').textContent = data.severity_counts.Low || 0;
+        }
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+    }
+}
+
+// Image preview functionality
+document.getElementById('blood_image').addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name || 'No file chosen';
+    document.getElementById('fileName').textContent = fileName;
+    
+    if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('previewImg');
+            img.src = e.target.result;
+            img.style.display = 'block';
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
+});
+
+// Form submission
+document.getElementById('malariaForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoading = document.getElementById('btnLoading');
+    
+    // Show loading state
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+    analyzeBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/predict-malaria', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        });
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // Session expired or not logged in
+            alert('Session expired. Please login again.');
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        if (data.success) {
+            // Hide form, show results
+            document.getElementById('analysisForm').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            // Update result header
+            const resultHeader = document.getElementById('resultHeader');
+            const isInfected = data.result === 'Infected';
+            
+            if (isInfected) {
+                resultHeader.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+                resultHeader.style.color = '#991b1b';
+            } else {
+                resultHeader.style.background = 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)';
+                resultHeader.style.color = '#065f46';
+            }
+            
+            document.getElementById('resultTitle').textContent = data.result;
+            document.getElementById('resultConfidence').textContent = `Confidence: ${data.confidence}%`;
+            document.getElementById('resultSeverity').textContent = data.severity;
+            
+            // Update patient details
+            document.getElementById('patientId').textContent = data.patient_id;
+            document.getElementById('patientName').textContent = formData.get('name');
+            document.getElementById('patientAge').textContent = formData.get('age') + ' years';
+            document.getElementById('patientGender').textContent = formData.get('gender');
+            document.getElementById('patientContact').textContent = formData.get('contact') || 'N/A';
+            document.getElementById('doctorName').textContent = formData.get('doctor_name');
+            document.getElementById('analysisDate').textContent = data.analysis_date;
+            document.getElementById('analysisTime').textContent = data.analysis_time;
+            
+            // Update treatment and notice
+            document.getElementById('treatmentText').textContent = data.treatment;
+            
+            if (isInfected) {
+                document.getElementById('noticeText').textContent = 
+                    `Malaria infection detected with ${data.confidence}% confidence. Immediate medical attention is URGENTLY required. This is an AI-assisted diagnosis and should be confirmed by a qualified medical professional.`;
+            } else {
+                document.getElementById('noticeText').textContent = 
+                    'No malaria parasites detected. If symptoms persist, please consult with a healthcare professional for further evaluation.';
+            }
+            
+            // Scroll to results
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error analyzing image: ' + error.message + '\nPlease try again or refresh the page.');
+    } finally {
+        // Reset button
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        analyzeBtn.disabled = false;
+    }
+});
+
+function newAnalysis() {
+    toggleView('analysis');
+    document.getElementById('malariaForm').reset();
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('fileName').textContent = 'No file chosen';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init patient autocomplete
+document.addEventListener('DOMContentLoaded', () => {
+    initPatientSearch('name', 'patient_id', 'mal_confirm');
+    document.getElementById('mal_confirm').style.display = 'inline-block';
+});
+</script>
+{% endblock %}
