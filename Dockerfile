@@ -25,5 +25,5 @@ COPY . .
 # Create required folders
 RUN mkdir -p static/uploads/radiology static/uploads/pathology data
 
-# Start with Gunicorn (IMPORTANT)
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT app:app"]
+# Start with Gunicorn using config file
+CMD ["gunicorn", "--config", "gunicorn_config.py", "app:app"]
