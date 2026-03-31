@@ -7,7 +7,8 @@ DB_CONFIG = {
     'host':     os.environ.get('DB_HOST', 'localhost'),
     'user':     os.environ.get('DB_USER', 'root'),
     'password': os.environ.get('DB_PASSWORD', 'root'),
-    'database': os.environ.get('DB_NAME', 'electronic_health_records')
+    'database': os.environ.get('DB_NAME', 'electronic_health_records'),
+    'port':     int(os.environ.get('DB_PORT', 3306))
 }
 
 def get_db_connection():
