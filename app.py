@@ -13,6 +13,7 @@ from mysql.connector import Error
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
+# Run DB init when gunicorn loads the module (not just __main__)
 try:
     print("Initializing database...")
     if init_database():
