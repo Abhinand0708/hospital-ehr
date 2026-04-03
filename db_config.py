@@ -22,49 +22,31 @@ def get_db_connection():
 
 def init_database():
     try:
-        connection = mysql.connector.connect(
-            host=DB_CONFIG['host'],
-            user=DB_CONFIG['user'],
-            password=DB_CONFIG['password']
-        )
-        if connection.is_connected():
+        connection = get_db_connection()
+        if connection:
             cursor = connection.cursor()
-            cursor.execute("CREATE DATABASE IF NOT EXISTS electronic_health_records")
-            print("✓ Database 'electronic_health_records' created/verified")
+            with open('database_schema.sql', 'r') as f:
+                sql_script = f.read()
+            for statement in sql_script.split(';'):
+                stmt = statement.strip()
+                if stmt and 'CREATE DATABASE' not in stmt and 'USE ' not in stmt:
+                    try:
+                        cursor.execute(stmt)
+                    except Error as e:
+                        if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
+                            print(f"SQL warning: {e}")
+            connection.commit()
+            print("✓ All tables created/verified successfully")
+            _run_migrations(cursor, connection)
+            _seed_default_users(cursor, connection)
             cursor.close()
             connection.close()
-
-            connection = get_db_connection()
-            if connection:
-                cursor = connection.cursor()
-                with open('database_schema.sql', 'r') as f:
-                    sql_script = f.read()
-                for statement in sql_script.split(';'):
-                    stmt = statement.strip()
-                    if stmt:
-                        try:
-                            cursor.execute(stmt)
-                        except Error as e:
-                            if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
-                                print(f"SQL warning: {e}")
-                connection.commit()
-                print("✓ All tables created/verified successfully")
-
-                # Migrate existing tables — add new columns if missing
-                _run_migrations(cursor, connection)
-
-                # Seed default users with bcrypt hashed passwords
-                _seed_default_users(cursor, connection)
-
-                cursor.close()
-                connection.close()
-                return True
+            return True
     except Error as e:
         print(f"Error initializing database: {e}")
         return False
 
 def _run_migrations(cursor, connection):
-    """Add new columns to existing tables without breaking anything."""
     migrations = [
         "ALTER TABLE radiology_requests ADD COLUMN patient_name VARCHAR(200) AFTER patient_id",
         "ALTER TABLE radiology_requests ADD COLUMN radiologist_findings TEXT AFTER due_date",
@@ -80,13 +62,11 @@ def _run_migrations(cursor, connection):
             connection.commit()
         except Error as e:
             if 'duplicate column' in str(e).lower() or 'already exists' in str(e).lower():
-                pass  # column already exists, skip
+                pass
             else:
                 print(f"Migration warning: {e}")
 
-
 def _seed_default_users(cursor, connection):
-    """Insert default users if users table is empty"""
     try:
         cursor.execute("SELECT COUNT(*) FROM users")
         count = cursor.fetchone()[0]
@@ -107,7 +87,6 @@ def _seed_default_users(cursor, connection):
         print(f"Warning seeding users: {e}")
 
 def verify_user(username, password):
-    """Return user row if credentials valid, else None"""
     connection = get_db_connection()
     if not connection:
         return None
